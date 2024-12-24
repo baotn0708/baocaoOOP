@@ -1,18 +1,5 @@
 <Project copy>
-@workspace đây là prompt đầu tiên tôi hỏi bạn "tôi muốn tái cấu trúc project sao cho khai thác tối đa về OOP và clean code hơn. Với yêu cầu đó tôi quyết định dùng Type Script thay cho JavaScript, bạn có thể giúp tôi mường tượng được project mới sẽ như thế nào ko?" gần đây bạn trả lời, cấu trúc mới có thể là:
-src/
-  RoadManager.ts
-  Renderer.ts
-  Stats.ts
-  Dom.ts
-  Util.ts
-  Game.ts
-  Main.ts
-common.css
-images/
-package.json
-tsconfig.json
-bạn đã giúp tôi viết tốt Stats.ts, và Renderer.ts, Util.ts, Dom.ts, Game.ts. Bạn có thể giúp tôi code RoadManager.ts không? bạn cũng đã nói nó sẽ  sẽ chứa logic xây dựng, tinh chỉnh và quản lý các khúc đường (segment), bao gồm dữ liệu về đường, độ cong (curve), vật cản, v.v. để tách biệt hẳn khỏi phần vẽ hoặc trích xuất thống kê. Khá là khó, hãy đọc kĩ các file, suy nghĩ kĩ rồi trả lời nhé
+
 Javascript Pseudo 3D Racer
 ==========================
 
