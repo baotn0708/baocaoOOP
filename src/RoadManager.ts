@@ -168,4 +168,8 @@ export class RoadManager {
   private lastY(): number {
     return this.segments.length === 0 ? 0 : this.segments[this.segments.length - 1].hill;
   }
+  public findSegment(z: number, segmentLength: number): Segment {
+    const index = Math.floor(z / segmentLength) % this.segments.length;
+    return this.segments[index];
+  }
 }
