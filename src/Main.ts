@@ -68,11 +68,31 @@ function ready(images: HTMLImageElement[]): void {
  *  - Mô phỏng logic ở main.js tùy biến AI.
  */
 function updateCarOffset(car: Car, oldSeg: Segment, newSeg: Segment): number {
-  // Ở đây hành vi AI tuỳ ý:
-  // Ví dụ: car.x += (Math.random() * 0.01 - 0.005) để đảo trái phải
-  // Hoặc tránh người chơi, v.v.
-  // Tạm để trống hoặc tuỳ biến
-  return car.x;
+  // 1) Xe trôi nhẹ nhàng trái/phải
+  const drift = (Math.random() * 0.01) - 0.005; 
+  let newX = car.x + drift;
+
+  // 2) Giới hạn vị trí trong [-1..1]
+  if (newX < -1) newX = -1;
+  if (newX >  1) newX =  1;
+
+  // 3) (Tuỳ chọn) Kiểm tra đụng xe khác trong segment
+  //    Lấy danh sách car trong newSeg, xem nếu overlap -> đẩy ra
+  //    if (newSeg.cars && newSeg.cars.length > 0) {
+  //       for (const otherCar of newSeg.cars) {
+  //         if (otherCar !== car) {
+  //           if (Util.overlap(newX, car.spriteW, otherCar.x, otherCar.spriteW, 0.8)) {
+  //             // ví dụ đẩy xe AI tạt ra trái
+  //             newX -= 0.01;
+  //           }
+  //         }
+  //       }
+  //    }
+
+  // 4) (Tuỳ chọn) Kiểm tra va chạm với người chơi
+  //    so sánh playerX/playerZ ~ car.x/car.z
+
+  return newX;
 }
 
 /**
@@ -83,24 +103,29 @@ function updateCars(dt: number, playerSegment: Segment, playerW: number): void {
   for (const car of cars) {
     // Đoạn cũ
     const oldSeg = roadManager.findSegment(car.z, segmentLength);
+
     // Tăng z xe
     car.z = Util.increase(car.z, dt * car.speed, trackLength);
     car.percent = Util.percentRemaining(car.z, segmentLength);
+
+    // Đoạn mới
     const newSeg = roadManager.findSegment(car.z, segmentLength);
 
-    // Chuyển offset AI xe
+    // Cập nhật offset
     car.x = updateCarOffset(car, oldSeg, newSeg);
 
-    // (Nếu muốn track cars tại segment cũ/mới, cập nhật mảng cũ, mảng mới)
-    // if (oldSeg !== newSeg) {
-    //   oldSeg.cars.splice(oldSeg.cars.indexOf(car), 1);
-    //   newSeg.cars.push(car);
-    // }
+    // (Nếu cần lưu hoặc xóa car khỏi oldSeg, thêm vào newSeg)
 
     // Va chạm với người chơi (đơn giản):
-    // Tính overlap nếu (car.z ~ playerZ + position) & (car.x ~ playerX)
-    // Tính toạ độ sprite để xem
-    // ...
+    // Giả sử nếu car ở gần cùng Z, ta kiểm tra overlap
+    const playerZAbs = position + playerZ; 
+    if (Math.abs(car.z - playerZAbs) < segmentLength) {
+      if (Util.overlap(car.x, car.spriteW, playerX, playerW, 0.8)) {
+        // Ví dụ giảm tốc người chơi
+        speed *= 0.9;
+        // Hoặc đẩy xe AI, vv...
+      }
+    }
   }
 }
 
@@ -109,41 +134,47 @@ function updateCars(dt: number, playerSegment: Segment, playerW: number): void {
  *  - Dài dòng hơn main.js; xem keyLeft/keyRight, v.v.
  */
 function update(dt: number): void {
-  // Tinh dx & cong đường
+  // Tính tỷ lệ tốc độ so với tốc độ tối đa
   const speedPercent = speed / maxSpeed;
+  // Mức bẻ lái = tốc độ * dt * hằng số nào đó (ở đây là 2)
   const dx = dt * 2 * speedPercent;
-  const playerSegment = roadManager.findSegment(position + playerZ, segmentLength);
-  const playerW = 64; // Giả định chiều rộng sprite người chơi
 
-  // Bẻ lái
+  // Xác định segment người chơi đang đứng (dựa vào position+playerZ)
+  const playerSegment = roadManager.findSegment(position + playerZ, segmentLength);
+  // Giả định bề ngang sprite của người chơi
+  const playerW = 64;
+
+  // 1) Bẻ lái trái/phải
   if (keyLeft)  playerX -= dx;
   if (keyRight) playerX += dx;
-  // Ảnh hưởng cong
+
+  // 2) Ảnh hưởng cong của đoạn đường
   playerX -= dx * speedPercent * playerSegment.curve * centrifugal;
 
-  // Tăng/giảm tốc
+  // 3) Tăng/giảm tốc độ
   if (keyFaster)      speed = Util.accelerate(speed, accel, dt);
   else if (keySlower) speed = Util.accelerate(speed, breaking, dt);
   else                speed = Util.accelerate(speed, decel, dt);
 
+  // Giới hạn lại tốc độ
   speed = Util.limit(speed, 0, maxSpeed);
 
-  // Cập nhật các xe, va chạm...
+  // 4) Cập nhật xe AI (va chạm, vị trí)
   updateCars(dt, playerSegment, playerW);
 
-  // Cập nhật camera Z
+  // 5) Cập nhật vị trí camera (Z)
   position = Util.increase(position, speed * dt, trackLength);
 
-  // Offroad
+  // 6) Xử lý offroad: nếu playerX ngoài [-1..1], giảm tốc
   if ((playerX < -1) || (playerX > 1)) {
     speed *= 0.98;
     if (speed < offRoadLimit) speed = offRoadLimit;
   }
 
-  // Cập nhật thời gian vòng
+  // 7) Cập nhật thời gian vòng
   currentLapTime += dt;
 
-  // Gửi thông tin lên HUD
+  // 8) Gửi thông tin lên HUD
   hud.updateSpeed(speed);
   hud.updateLapTime(currentLapTime);
 }
@@ -152,25 +183,48 @@ function update(dt: number): void {
  * Vẽ cảnh (background, đường, xe, v.v.)
  *  - Tham khảo main.js: renderer.drawBackground..., renderer.drawSegment...
  */
+// ...existing code...
 function render(): void {
+  // 1) Xoá màn hình
   ctx.clearRect(0, 0, width, height);
   const renderer = new Renderer(ctx, width, height);
 
-  // Background
+  // 2) Background & parallax
+  //  (Nếu có nhiều lớp sky/hill/tree, gọi drawBackground nhiều lần)
   renderer.drawBackground(background, 0, { x: 0, y: 0, w: 320, h: 240 }, 0);
 
-  // Vẽ road
-  // (Ví dụ lặp qua drawDistance segment, gán cameraZ = position)
-  // Tìm segment near/far, project, draw...
-  // Tweak logic tuỳ theo Render.segment() cũ.
-  
-  // Vẽ AI cars, người chơi
-  // Tính toạ độ 2D, scale, chèn sprite
-  // ...
+  // 3) Tính toán segment đang đứng
+  //    => index, cameraZ = position, drawDistance
+  const baseSegment = roadManager.findSegment(position, segmentLength);
+  const basePercent = Util.percentRemaining(position, segmentLength);
+  const playerSegment = roadManager.findSegment(position + playerZ, segmentLength);
+  cost playeY = Util.
+  const baseIndex = baseSegment.index;
+  const drawDistance = 300; // tuỳ ý
+  const cameraZ = position;
 
-  // (Nếu muốn hiển thị debug info...) 
+  // 4) Vẽ đường (loop qua drawDistance segments)
+  for (let i = 0; i < drawDistance; i++) {
+    const index = (baseIndex + i) % roadManager.getSegments().length;
+    const seg = roadManager.getSegments()[index];
+    // ... tính project 2D, scale, x1,y1,w1, x2,y2,w2, color...
+    // renderer.drawSegment(lanes, x1, y1, w1, x2, y2, w2, colorSet, fogLevel);
+  }
+
+  // 5) Vẽ xe AI
+  for (const car of cars) {
+    // ... tính scale, x2d, y2d ...
+    // renderer.drawSprite(sprites, { x:..., y:..., w:..., h:... }, scale, x2d, y2d, -0.5, -1);
+  }
+
+  // 6) Vẽ người chơi
+  // ... assume player sprite, scale, x2d, y2d ...
+  // renderer.drawSprite(sprites, { x:..., y:..., w:..., h:... }, scale, x2d, y2d, -0.5, -1);
+
+  // 7) Debug info nếu cần
   // ...
 }
+// ...existing code...
 
 // Khởi tạo stats
 const stats = new Stats();
