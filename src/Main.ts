@@ -185,44 +185,50 @@ function update(dt: number): void {
  */
 // ...existing code...
 function render(): void {
-  // 1) Xoá màn hình
   ctx.clearRect(0, 0, width, height);
   const renderer = new Renderer(ctx, width, height);
-
-  // 2) Background & parallax
-  //  (Nếu có nhiều lớp sky/hill/tree, gọi drawBackground nhiều lần)
   renderer.drawBackground(background, 0, { x: 0, y: 0, w: 320, h: 240 }, 0);
-
-  // 3) Tính toán segment đang đứng
-  //    => index, cameraZ = position, drawDistance
   const baseSegment = roadManager.findSegment(position, segmentLength);
   const basePercent = Util.percentRemaining(position, segmentLength);
-  const playerSegment = roadManager.findSegment(position + playerZ, segmentLength);
-  cost playeY = Util.
-  const baseIndex = baseSegment.index;
-  const drawDistance = 300; // tuỳ ý
+  const drawDistance = 300;
   const cameraZ = position;
-
-  // 4) Vẽ đường (loop qua drawDistance segments)
-  for (let i = 0; i < drawDistance; i++) {
-    const index = (baseIndex + i) % roadManager.getSegments().length;
+  const lanes = 3;
+  for (let n = 0; n < drawDistance; n++) {
+    const index = (baseSegment.index + n) % roadManager.getSegments().length;
     const seg = roadManager.getSegments()[index];
-    // ... tính project 2D, scale, x1,y1,w1, x2,y2,w2, color...
-    // renderer.drawSegment(lanes, x1, y1, w1, x2, y2, w2, colorSet, fogLevel);
+    const fog = Util.exponentialFog(n / drawDistance, 5);
+    const projected = { world: { x: 0, y: 0, z: 0 }, camera: {}, screen: {} };
+    projected.world.z = (index * segmentLength) - cameraZ;
+    Util.project(projected, 0, 0, 0, 1, width, height, 2000);
+    const x1 = 0, y1 = 0, w1 = 0, x2 = 0, y2 = 0, w2 = 0;
+    renderer.drawSegment(lanes, x1, y1, w1, x2, y2, w2, { road: '#999', rumble: '#fff', grass: '#070' }, fog);
   }
-
-  // 5) Vẽ xe AI
   for (const car of cars) {
-    // ... tính scale, x2d, y2d ...
-    // renderer.drawSprite(sprites, { x:..., y:..., w:..., h:... }, scale, x2d, y2d, -0.5, -1);
+    const scale = 1;
+    const x2d = 0;
+    const y2d = 0;
+    renderer.drawSprite(
+      sprites,
+      { x: 0, y: 0, w: car.spriteW, h: car.spriteW },
+      scale,
+      x2d,
+      y2d,
+      -0.5,
+      -1
+    );
   }
-
-  // 6) Vẽ người chơi
-  // ... assume player sprite, scale, x2d, y2d ...
-  // renderer.drawSprite(sprites, { x:..., y:..., w:..., h:... }, scale, x2d, y2d, -0.5, -1);
-
-  // 7) Debug info nếu cần
-  // ...
+  const scale = 1;
+  const playerX2d = 0;
+  const playerY2d = 0;
+  renderer.drawSprite(
+    sprites,
+    { x: 0, y: 0, w: 64, h: 64 },
+    scale,
+    playerX2d,
+    playerY2d,
+    -0.5,
+    -1
+  );
 }
 // ...existing code...
 
