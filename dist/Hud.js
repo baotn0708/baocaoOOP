@@ -69,6 +69,6 @@ export class Hud {
         document.body.appendChild(slider);
     }
     getSpeedElemContainer() {
-        return this.speedElem.parentElement.parentElement;
+        return this.speedElem;
     }
 }

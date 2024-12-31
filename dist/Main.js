@@ -43,9 +43,10 @@ function ready(images) {
     background = images[0];
     sprites = images[1];
     ctx = Dom.get('canvas').getContext('2d');
-    trackLength = roadManager.getSegments().length * segmentLength;
-    // Gắn DOM HUD
-    document.body.appendChild(hud.getSpeedElemContainer());
+    const speedEl = hud.getSpeedElemContainer();
+    if (!document.body.contains(speedEl)) {
+        document.body.appendChild(speedEl);
+    }
 }
 /**
  * Cập nhật offset xe AI (tránh nhau, v.v.)

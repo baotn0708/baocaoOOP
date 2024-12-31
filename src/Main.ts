@@ -58,9 +58,10 @@ function ready(images: HTMLImageElement[]): void {
   background = images[0];
   sprites = images[1];
   ctx = (Dom.get('canvas') as HTMLCanvasElement).getContext('2d')!;
-  trackLength = roadManager.getSegments().length * segmentLength;
-  // Gắn DOM HUD
-  document.body.appendChild(hud.getSpeedElemContainer());
+  const speedEl = hud.getSpeedElemContainer();
+  if (!document.body.contains(speedEl)) {
+    document.body.appendChild(speedEl);
+  }
 }
 
 /**

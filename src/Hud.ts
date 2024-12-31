@@ -77,10 +77,8 @@ export class Hud {
     });
     document.body.appendChild(slider);
   }
-    public getSpeedElemContainer(): HTMLElement {
-
-    return this.speedElem.parentElement!.parentElement!;
-
-    }
+  public getSpeedElemContainer(): HTMLElement {
+    return this.speedElem;
+  }
 
 }
