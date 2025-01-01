@@ -1,10 +1,10 @@
-import { Dom } from './Dom';
-import { Stats } from './Stats';
-import { Game } from './Game';
-import { Util } from './Util';
-import { RoadManager, Segment } from './RoadManager';
-import { Renderer } from './Renderer';
-import { Hud } from './Hud';
+import { Dom } from './Dom.js';
+import { Stats } from './Stats.js';
+import { Game } from './Game.js';
+import { Util } from './Util.js';
+import { RoadManager, Segment } from './RoadManager.js';
+import { Renderer } from './Renderer.js';
+import { Hud } from './Hud.js';
 
 interface Car {
   x: number;        // -1..1 (road-relative X)
@@ -32,12 +32,14 @@ let sprites: HTMLImageElement;
 // Road + HUD
 const roadManager = new RoadManager();
 roadManager.buildDefaultRoad();
+
 const hud = new Hud();
 hud.addDebugSlider();
 
 // Game state
 let position = 0;           // camera Z
 let trackLength = 0;        // tổng chiều dài đường
+trackLength = roadManager.getSegments().length * segmentLength;
 let playerX = 0;            // -1..1
 let playerZ = 200;          // camera offset
 let speed = 0;
@@ -57,7 +59,12 @@ const cars: Car[] = []; // có thể khởi tạo AI cars.push(...)
 function ready(images: HTMLImageElement[]): void {
   background = images[0];
   sprites = images[1];
-  ctx = (Dom.get('canvas') as HTMLCanvasElement).getContext('2d')!;
+  const c = Dom.get('canvas') as HTMLCanvasElement;
+  c.width  = width;
+  c.height = height;
+  ctx = c.getContext('2d')!;
+  hud.updateSpeed(speed);
+  hud.updateLapTime(currentLapTime);
   const speedEl = hud.getSpeedElemContainer();
   if (!document.body.contains(speedEl)) {
     document.body.appendChild(speedEl);

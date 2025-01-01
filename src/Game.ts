@@ -1,7 +1,7 @@
 // src/Game.ts
-import { Dom } from './Dom';
-import { Util } from './Util';
-import { Stats } from './Stats';
+import { Dom } from './Dom.js';
+import { Util } from './Util.js';
+import { Stats } from './Stats.js';
 
 export class Game {
   public static run(options: {

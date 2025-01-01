@@ -1,5 +1,5 @@
 // src/RoadManager.ts
-import { Util } from './Util';
+import { Util } from './Util.js';
 
 /**
  * Mô tả một đoạn đường (segment).

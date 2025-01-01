@@ -25,6 +25,7 @@ hud.addDebugSlider();
 // Game state
 let position = 0; // camera Z
 let trackLength = 0; // tổng chiều dài đường
+trackLength = roadManager.getSegments().length * segmentLength;
 let playerX = 0; // -1..1
 let playerZ = 200; // camera offset
 let speed = 0;
@@ -42,7 +43,12 @@ const cars = []; // có thể khởi tạo AI cars.push(...)
 function ready(images) {
     background = images[0];
     sprites = images[1];
-    ctx = Dom.get('canvas').getContext('2d');
+    const c = Dom.get('canvas');
+    c.width = width;
+    c.height = height;
+    ctx = c.getContext('2d');
+    hud.updateSpeed(speed);
+    hud.updateLapTime(currentLapTime);
     const speedEl = hud.getSpeedElemContainer();
     if (!document.body.contains(speedEl)) {
         document.body.appendChild(speedEl);

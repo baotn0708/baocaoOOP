@@ -1,4 +1,4 @@
-import { Dom } from './Dom';
+import { Dom } from './Dom.js';
 
 /** 
  * Quản lý HUD (Heads-up Display) và các TWEAK UI HANDLERS nếu muốn.
@@ -15,6 +15,8 @@ export class Hud {
     this.speedElem    = this.ensureElement('hud-speed');
     this.lapTimeElem  = this.ensureElement('hud-lap-time');
     this.bestTimeElem = this.ensureElement('hud-best-time');
+    this.speedElem   = this.ensureElement('speed_value');
+    this.lapTimeElem = this.ensureElement('current_lap_time_value');
     // Khởi tạo hiển thị nếu cần
   }
 
