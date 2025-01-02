@@ -23,6 +23,12 @@ const height = 768;
 const segmentLength = 200;
 const centrifugal = 0.3;
 const offRoadLimit = segmentLength / 4;
+let skyOffset = 0;
+let hillOffset = 0;
+let treeOffset = 0;
+const skySpeed  = 0.001;
+const hillSpeed = 0.002;
+const treeSpeed = 0.003;
 
 // Canvas, images
 let ctx: CanvasRenderingContext2D;
@@ -142,6 +148,7 @@ function updateCars(dt: number, playerSegment: Segment, playerW: number): void {
  *  - Dài dòng hơn main.js; xem keyLeft/keyRight, v.v.
  */
 function update(dt: number): void {
+  stats.begin();
   // Tính tỷ lệ tốc độ so với tốc độ tối đa
   const speedPercent = speed / maxSpeed;
   // Mức bẻ lái = tốc độ * dt * hằng số nào đó (ở đây là 2)
@@ -178,13 +185,24 @@ function update(dt: number): void {
     speed *= 0.98;
     if (speed < offRoadLimit) speed = offRoadLimit;
   }
-
+  
   // 7) Cập nhật thời gian vòng
   currentLapTime += dt;
+  if (keyFaster) {
+    speed = Util.accelerate(speed, accel, dt);
+  } else if (keySlower) {
+    speed = Util.accelerate(speed, breaking, dt);
+  } else {
+    speed = Util.accelerate(speed, decel, dt);
+  }
+  
+  speed = Util.limit(speed, 0, maxSpeed);
 
   // 8) Gửi thông tin lên HUD
   hud.updateSpeed(speed);
   hud.updateLapTime(currentLapTime);
+  stats.end();
+  
 }
 
 /**
@@ -199,6 +217,11 @@ function render(): void {
   const baseSegment = roadManager.findSegment(position, segmentLength);
   const basePercent = Util.percentRemaining(position, segmentLength);
   const drawDistance = 300;
+  // Tính offset theo tốc độ
+  skyOffset  = Util.increase(skyOffset,  skySpeed  * (speed / maxSpeed), 1);
+  hillOffset = Util.increase(hillOffset, hillSpeed * (speed / maxSpeed), 1);
+  treeOffset = Util.increase(treeOffset, treeSpeed * (speed / maxSpeed), 1);
+  
   const cameraZ = position;
   const lanes = 3;
   for (let n = 0; n < drawDistance; n++) {
@@ -242,6 +265,7 @@ function render(): void {
 
 // Khởi tạo stats
 const stats = new Stats();
+document.body.appendChild(stats.domElement); // Thêm Stats vào DOM
 
 // Key bindings
 const keys = [

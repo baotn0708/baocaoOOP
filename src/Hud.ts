@@ -12,7 +12,7 @@ export class Hud {
 
   constructor() {
     // Tìm nạp các thẻ DOM cho HUD, ví dụ:
-    this.speedElem    = this.ensureElement('hud-speed');
+    // this.speedElem    = this.ensureElement('hud-speed');
     this.lapTimeElem  = this.ensureElement('hud-lap-time');
     this.bestTimeElem = this.ensureElement('hud-best-time');
     this.speedElem   = this.ensureElement('speed_value');
