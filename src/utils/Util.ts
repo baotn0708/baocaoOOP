@@ -1,3 +1,22 @@
+interface Point {
+  world: {
+    y: number;
+    z: number;
+    x?: number;
+  };
+  camera: {
+    x?: number;
+    y?: number;
+    z?: number;
+    scale?: number;
+  };
+  screen: {
+    x?: number;
+    y?: number;
+    w?: number;
+    scale?: number;
+  };
+}
 export class Util {
   public static timestamp(): number {
     return new Date().getTime();
@@ -46,4 +65,14 @@ export class Util {
     while (result < 0) result += max;
     return result;
   }
+  public static project(p: Point, cameraX: number, cameraY: number, cameraZ: number, 
+    cameraDepth: number, width: number, height: number, roadWidth: number): void {
+    p.camera.x = (p.world.x || 0) - cameraX;
+    p.camera.y = (p.world.y || 0) - cameraY;
+    p.camera.z = (p.world.z || 0) - cameraZ;
+    p.screen.scale = cameraDepth/p.camera.z;
+    p.screen.x = Math.round((width/2) + (p.screen.scale * p.camera.x * width/2));
+    p.screen.y = Math.round((height/2) - (p.screen.scale * p.camera.y * height/2));
+    p.screen.w = Math.round((p.screen.scale * roadWidth * width/2));
+    }
 }

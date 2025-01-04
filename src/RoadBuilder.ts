@@ -62,15 +62,17 @@ export const ROAD = {
   }
 };
 export class RoadBuilder {
-  private static segments: Segment[] = [];
-  private static segmentLength = 200;
+  public  static segments: Segment[] = [];
+  public static segmentLength = 200;
   private static rumbleLength = 3;
   private static playerZ = 0;
-  private static trackLength = 0;
+  public static trackLength = 0;
   private static cars: Car[] = [];
   private static totalCars = 200;
   private static maxSpeed = 200;
-
+  public static getSegments(): Segment[] {
+    return this.segments;
+  }
   private static lastY(): number {
     return this.segments.length === 0 ? 0 : this.segments[this.segments.length - 1].p2.world.y;
   }
