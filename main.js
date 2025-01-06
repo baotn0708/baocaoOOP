@@ -206,8 +206,6 @@ function updateCarOffset(car, carSegment, playerSegment, playerW) {
     return 0;
 }
 
-
-
 function formatTime(dt) {
   var minutes = Math.floor(dt/60);
   var seconds = Math.floor(dt - (minutes * 60));

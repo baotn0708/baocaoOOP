@@ -29,6 +29,9 @@ interface Segment {
   sprites: SpriteInstance[];
   cars: Car[];
   color: typeof COLORS.LIGHT | typeof COLORS.DARK | typeof COLORS.START | typeof COLORS.FINISH;
+  looped?: boolean;
+  fog?: number;
+  clip?: number;
 }
 
 interface SpriteInstance {
@@ -40,6 +43,7 @@ interface Car {
   z: number;
   sprite: Sprite;
   speed?: number;
+  percent?: number;
 }
 export const ROAD = {
   LENGTH: {
@@ -67,7 +71,7 @@ export class RoadBuilder {
   private static rumbleLength = 3;
   private static playerZ = 0;
   public static trackLength = 0;
-  private static cars: Car[] = [];
+  public static cars: Car[] = [];
   private static totalCars = 200;
   private static maxSpeed = 200;
   public static getSegments(): Segment[] {
@@ -205,48 +209,52 @@ export class RoadBuilder {
 
     this.trackLength = this.segments.length * this.segmentLength;
   }
-  private static resetSprites(): void {
-    // Billboard placement
-    this.addSprite(20,  SPRITES.BILLBOARD07, -1);
-    this.addSprite(40,  SPRITES.BILLBOARD06, -1);
-    this.addSprite(60,  SPRITES.BILLBOARD08, -1);
-    this.addSprite(80,  SPRITES.BILLBOARD09, -1);
-    this.addSprite(100, SPRITES.BILLBOARD01, -1);
-    this.addSprite(120, SPRITES.BILLBOARD02, -1);
-    this.addSprite(140, SPRITES.BILLBOARD03, -1);
-    this.addSprite(160, SPRITES.BILLBOARD04, -1);
-    this.addSprite(180, SPRITES.BILLBOARD05, -1);
-
-    this.addSprite(240, SPRITES.BILLBOARD07, -1.2);
-    this.addSprite(240, SPRITES.BILLBOARD06,  1.2);
-    this.addSprite(this.segments.length - 25, SPRITES.BILLBOARD07, -1.2);
-    this.addSprite(this.segments.length - 25, SPRITES.BILLBOARD06,  1.2);
-
-    // Palm trees
+    private static resetSprites(): void {
+    // Billboard placement - adjust offset to be further from road
+    this.addSprite(20,  SPRITES.BILLBOARD07, -3);
+    this.addSprite(40,  SPRITES.BILLBOARD06, -3);
+    this.addSprite(60,  SPRITES.BILLBOARD08, -3);
+    this.addSprite(80,  SPRITES.BILLBOARD09, -3);
+    this.addSprite(100, SPRITES.BILLBOARD01, -3);
+    this.addSprite(120, SPRITES.BILLBOARD02, -3);
+    this.addSprite(140, SPRITES.BILLBOARD03, -3);
+    this.addSprite(160, SPRITES.BILLBOARD04, -3);
+    this.addSprite(180, SPRITES.BILLBOARD05, -3);
+  
+    this.addSprite(240,                    SPRITES.BILLBOARD07, -2);
+    this.addSprite(240,                    SPRITES.BILLBOARD06,  2);
+    this.addSprite(this.segments.length-25, SPRITES.BILLBOARD07, -2);
+    this.addSprite(this.segments.length-25, SPRITES.BILLBOARD06,  2);
+  
+    // Palm trees - keep them further from road
     for(let n = 10; n < 200; n += 4 + Math.floor(n/100)) {
-      this.addSprite(n, SPRITES.PALM_TREE, 0.5 + Math.random()*0.5);
-      this.addSprite(n, SPRITES.PALM_TREE, 1 + Math.random()*2);
+      this.addSprite(n, SPRITES.PALM_TREE, -2 - Math.random());  // Changed offsets
+      this.addSprite(n, SPRITES.PALM_TREE, 2 + Math.random());
     }
-
-    // Columns and trees
+  
+    // Columns and trees - adjust positioning
     for(let n = 250; n < 1000; n += 5) {
-      this.addSprite(n, SPRITES.COLUMN, 1.1);
-      this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2));
-      this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2));
+      this.addSprite(n, SPRITES.COLUMN, -2.5);  // Changed from 1.1
+      this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -3 - Math.random());
+      this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -3 - Math.random());
     }
-
-    // Plants
+  
+    // Plants - keep them off the road
     for(let n = 200; n < this.segments.length; n += 3) {
-      this.addSprite(n, Util.randomChoice(PLANT_SPRITES), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+      const offset = Util.randomChoice([1,-1]) * (3 + Math.random() * 2);  // Changed multiplier
+      this.addSprite(n, Util.randomChoice(PLANT_SPRITES), offset);
     }
-
-    // Random roadside objects
+  
+    // Random roadside objects - adjust distances
     for(let n = 1000; n < (this.segments.length-50); n += 100) {
       const side = Util.randomChoice([1, -1]);
-      this.addSprite(n + Util.randomInt(0, 50), Util.randomChoice(BILLBOARD_SPRITES), -side);
+      this.addSprite(n + Util.randomInt(0, 50), 
+        Util.randomChoice(BILLBOARD_SPRITES), 
+        -side * 3);  // Changed multiplier
+      
       for(let i = 0; i < 20; i++) {
         const sprite = Util.randomChoice(PLANT_SPRITES);
-        const offset = side * (1.5 + Math.random());
+        const offset = side * (3 + Math.random());  // Changed multiplier
         this.addSprite(n + Util.randomInt(0, 50), sprite, offset);
       }
     }

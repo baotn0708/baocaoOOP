@@ -63,17 +63,18 @@ export class Game {
   private static loadImages(names: string[], callback: (images: HTMLImageElement[]) => void): void {
     const result: HTMLImageElement[] = [];
     let count = names.length;
-
+  
     const onload = () => {
       if (--count === 0) {
         callback(result);
       }
     };
-
+  
     names.forEach((name, index) => {
       result[index] = new Image();
       Dom.on(result[index], 'load', onload as EventListener);
-      result[index].src = `images/${name}.png`;
+      // Update image path to use relative path
+      result[index].src = `./images/${name}.png`;
     });
   }
 
@@ -123,14 +124,39 @@ export class Game {
     return result;
   }
 
-  private static playMusic(): void {
+    private static playMusic(): void {
     const storage = Dom.storage as DomStorage;
     const music = Dom.get('music') as HTMLAudioElement;
     if (music) {
       music.loop = true;
       music.volume = 0.05;
       music.muted = (storage.muted === "true");
-      music.play();
+  
+      // Add user interaction check
+      const startMusic = () => {
+        music.play().catch(() => {
+          // Ignore failed play attempt
+          console.log("Music autoplay blocked - waiting for user interaction");
+        });
+      };
+  
+      // Try to play initially
+      startMusic();
+  
+      // Add multiple event listeners for user interaction
+      const userInteractionEvents = ['click', 'touchstart', 'keydown'];
+      const startMusicOnce = () => {
+        startMusic();
+        userInteractionEvents.forEach(event => {
+          document.removeEventListener(event, startMusicOnce);
+        });
+      };
+  
+      userInteractionEvents.forEach(event => {
+        document.addEventListener(event, startMusicOnce);
+      });
+  
+      // Mute button functionality
       Dom.toggleClassName('mute', 'on', music.muted);
       Dom.on('mute', 'click', () => {
         storage.muted = String(music.muted = !music.muted);

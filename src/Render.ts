@@ -11,6 +11,7 @@ export interface RenderOptions {
 }
 
 export class Render {
+  
   private static rumbleWidth(projectedRoadWidth: number, lanes: number): number { 
     return projectedRoadWidth/Math.max(6, 2*lanes); 
   }
@@ -82,20 +83,41 @@ export class Render {
     }
   }
 
-  public static sprite(ctx: CanvasRenderingContext2D, width: number, height: number,
-                      resolution: number, roadWidth: number, sprites: HTMLImageElement[],
-                      sprite: Sprite, scale: number, destX: number, destY: number,
-                      offsetX: number = 0, offsetY: number = 0, clipY?: number): void {
+    public static sprite(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    resolution: number,
+    roadWidth: number,
+    sprites: HTMLImageElement[],
+    sprite: Sprite,
+    scale: number,
+    destX: number,
+    destY: number,
+    offsetX: number = 0,
+    offsetY: number = 0,
+    clipY?: number
+  ): void {
     const destW = (sprite.w * scale * width/2) * (SPRITE_SCALE * roadWidth);
     const destH = (sprite.h * scale * width/2) * (SPRITE_SCALE * roadWidth);
-
+  
     destX = destX + (destW * offsetX);
     destY = destY + (destH * offsetY);
-
-    const clipH = clipY ? Math.max(0, destY+destH-clipY) : 0;
+  
+    const clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
+    
     if (clipH < destH) {
-      ctx.drawImage(sprites[0], sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH),
-                   destX, destY, destW, destH - clipH);
+      ctx.drawImage(
+        sprites[0],
+        sprite.x,
+        sprite.y,
+        sprite.w,
+        sprite.h - (sprite.h * clipH/destH),
+        destX | 0,  // Force integer positions
+        destY | 0,
+        destW | 0,
+        (destH - clipH) | 0
+      );
     }
   }
 

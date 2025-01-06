@@ -1,1 +1,13 @@
-{"compilerOptions": {"target": "es2016", "lib": ["es2016", "dom"]}}
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es2016", // Thay đổi từ es5 sang es2016
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "lib": ["es2016", "dom"] // Thêm lib array
+  }
+}
