@@ -75,12 +75,12 @@ export class Util {
     p.screen.y = Math.round((height/2) - (p.screen.scale * p.camera.y * height/2));
     p.screen.w = Math.round((p.screen.scale * roadWidth * width/2));
     }
-    public static overlap(x1: number, w1: number, x2: number, w2: number, percent?: number): boolean {
-      const half = (percent || 1) / 2;
+    public static overlap(x1: number, w1: number, x2: number, w2: number, percent: number = 1): boolean {
+      const half = percent/2;
       const min1 = x1 - (w1 * half);
       const max1 = x1 + (w1 * half);
       const min2 = x2 - (w2 * half);
       const max2 = x2 + (w2 * half);
-      return !((max1 < min2) || (min1 > max2));
-  }
+      return !(max1 < min2 || min1 > max2);
+    }
 }

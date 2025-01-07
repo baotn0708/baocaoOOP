@@ -24,7 +24,7 @@ interface GameOptions {
 export class RacingGame {
   // Basic game settings
   private fps = 60;
-  private step = 1/this.fps;
+  public step = 1/this.fps;
   private width = 1024;
   private height = 768;
 
@@ -198,51 +198,47 @@ export class RacingGame {
   
     // Handle off-road deceleration and collisions
     // In update method, modify collision check:
-if ((this.playerX < -1) || (this.playerX > 1)) {
-  if (this.speed > this.offRoadLimit) {
-    this.speed = Util.accelerate(this.speed, this.offRoadDecel, dt);
-  }
-
-  // Only check collisions with nearby sprites
-  for(let n = 0; n < playerSegment.sprites.length; n++) {
-    const sprite = playerSegment.sprites[n];
-    const spriteW = sprite.source.w * SPRITE_SCALE;
-    
-    // Adjust collision box based on sprite type
-    const collisionWidth = (sprite.source === SPRITES.COLUMN || 
-                           BILLBOARD_SPRITES.some(b => b === sprite.source)) ? 
-                           spriteW * 0.8 : spriteW * 0.5;
-
-    if (Math.abs(sprite.offset) <= 2) {  // Only check sprites close to road
-      if (Util.overlap(this.playerX, playerW, 
-          sprite.offset + collisionWidth/2 * (sprite.offset > 0 ? 1 : -1), 
-          collisionWidth)) {
-        this.speed = this.maxSpeed/5;
-        this.position = Util.increase(
-          playerSegment.p1.world.z, 
-          -this.playerZ!, 
-          RoadBuilder.trackLength
-        );
-        break;
+    if ((this.playerX < -1) || (this.playerX > 1)) {
+      if (this.speed > this.offRoadLimit) {
+        this.speed = Util.accelerate(this.speed, this.offRoadDecel, dt);
+      }
+  
+      // Sprite collisions
+      for(let n = 0; n < playerSegment.sprites.length; n++) {
+        const sprite = playerSegment.sprites[n];
+        const spriteW = sprite.source.w * SPRITE_SCALE;
+        const spriteX = sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1);
+        
+        if (Util.overlap(this.playerX, playerW, spriteX, spriteW)) {
+          // Instead of immediately resetting position, smoothly reduce speed
+          this.speed = Math.min(this.speed, this.maxSpeed/5);
+          this.position = Util.increase(
+            playerSegment.p1.world.z, 
+            -this.playerZ!, 
+            RoadBuilder.trackLength
+          );
+          // Don't break here - let physics continue
+        }
       }
     }
-  }
-}
   
     // Handle collisions with other cars
     for(let n = 0; n < playerSegment.cars.length; n++) {
       const car = playerSegment.cars[n];
       const carW = car.sprite.w * SPRITE_SCALE;
+      
       if (this.speed > car.speed!) {
         if (Util.overlap(this.playerX, playerW, car.offset, carW, 0.8)) {
-          this.speed = car.speed! * (car.speed!/this.speed);
+          // Smooth collision response
+          const speedRatio = car.speed!/this.speed;
+          this.speed = car.speed! * speedRatio;
           this.position = Util.increase(car.z, -this.playerZ!, RoadBuilder.trackLength);
-          break;
+          // Don't break - continue physics
         }
       }
     }
   
-    // Keep player on road and within speed limits
+    // Keep player on road and within speed limits - MUST BE AFTER collision handling
     this.playerX = Util.limit(this.playerX, -3, 3);
     this.speed = Util.limit(this.speed, 0, this.maxSpeed);
   
@@ -393,13 +389,13 @@ if ((this.playerX < -1) || (this.playerX > 1)) {
   }
 
   private updateCars(dt: number, playerSegment: any, playerW: number): void {
-    for(let n = 0; n < this.cars.length; n++) {
-      const car = this.cars[n];
+    for(let n = 0; n < RoadBuilder.cars.length; n++) {
+      const car = RoadBuilder.cars[n];
       const oldSegment = RoadBuilder.findSegment(car.z);
       
       car.offset = car.offset + this.updateCarOffset(car, oldSegment, playerSegment, playerW);
       car.z = Util.increase(car.z, dt * car.speed!, RoadBuilder.trackLength);
-      car.percent = Util.percentRemaining(car.z, this.segmentLength);
+      car.percent = Util.percentRemaining(car.z, RoadBuilder.segmentLength);
       
       const newSegment = RoadBuilder.findSegment(car.z);
       
@@ -419,7 +415,7 @@ if ((this.playerX < -1) || (this.playerX > 1)) {
       return 0;
   
     for(let i = 1; i < lookahead; i++) {
-      const segment = this.segments[(carSegment.index+i)%this.segments.length];
+      const segment = RoadBuilder.segments[(carSegment.index+i)%RoadBuilder.segments.length];
   
       if ((segment === playerSegment) && (car.speed! > this.speed) && 
           (Util.overlap(this.playerX, playerW, car.offset, carW, 1.2))) {
@@ -551,8 +547,6 @@ if ((this.playerX < -1) || (this.playerX > 1)) {
         )
       });
     });
-    // Add similar handlers for cameraHeight, drawDistance, fieldOfView, fogDensity
-    // ... (similar pattern as roadWidth handler)
   }
 
   public start(): void {
