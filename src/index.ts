@@ -24,7 +24,7 @@ interface GameOptions {
 export class RacingGame {
   // Basic game settings
   private fps = 60;
-  public step = 1/this.fps;
+  private step = 1/this.fps;
   private width = 1024;
   private height = 768;
 

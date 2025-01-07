@@ -66,14 +66,14 @@ export const ROAD = {
   }
 };
 export class RoadBuilder {
-  public  static segments: Segment[] = [];
+  public static segments: Segment[] = [];
   public static segmentLength = 200;
   private static rumbleLength = 3;
   private static playerZ = 0;
   public static trackLength = 0;
   public static cars: Car[] = [];
   private static totalCars = 200;
-  private static maxSpeed = 200;
+  public static maxSpeed = RoadBuilder.segmentLength*60;
   public static getSegments(): Segment[] {
     return this.segments;
   }
