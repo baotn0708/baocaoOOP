@@ -25,7 +25,7 @@ interface DomStorage extends Storage {
 }
 
 export class Game {
-  private static instance: Game | null = null;
+  private static statsInstance: Stats | null = null;
 
   private constructor() {}
 
@@ -95,33 +95,50 @@ export class Game {
   }
 
   public static stats(parentId: string, id?: string): Stats {
-    const result = new Stats();
-    result.domElement.id = id || 'stats';
-    
-    const parent = Dom.get(parentId);
-    if (parent) {
-      parent.appendChild(result.domElement);
+    if (!this.statsInstance) {
+      // Use singleton Stats instance
+      this.statsInstance = Stats.getInstance();
+      this.statsInstance.domElement.id = id || 'stats';
+      
+      const parent = Dom.get(parentId);
+      if (parent) {
+        // Remove any existing stats elements
+        const existingStats = document.getElementById('stats');
+        if (existingStats) {
+          existingStats.remove();
+        }
+        
+        // Remove any existing performance message
+        const existingMsg = parent.querySelector('[data-performance-msg]');
+        if (existingMsg) {
+          existingMsg.remove();
+        }
 
-      const msg = document.createElement('div');
-      msg.style.cssText = "border: 2px solid gray; padding: 5px; margin-top: 5px; text-align: left; font-size: 1.15em; text-align: right;";
-      msg.innerHTML = "Your canvas performance is ";
-      parent.appendChild(msg);
+        // Add new elements
+        parent.appendChild(this.statsInstance.domElement);
 
-      const value = document.createElement('span');
-      value.innerHTML = "...";
-      msg.appendChild(value);
+        const msg = document.createElement('div');
+        msg.setAttribute('data-performance-msg', 'true');
+        msg.style.cssText = "border: 2px solid gray; padding: 5px; margin-top: 5px; text-align: left; font-size: 1.15em; text-align: right;";
+        msg.innerHTML = "Your canvas performance is ";
+        parent.appendChild(msg);
 
-      setInterval(() => {
-        const fps = result.current();
-        const ok = (fps > 50) ? 'good' : (fps < 30) ? 'bad' : 'ok';
-        const color = (fps > 50) ? 'green' : (fps < 30) ? 'red' : 'gray';
-        value.innerHTML = ok;
-        value.style.color = color;
-        msg.style.borderColor = color;
-      }, 5000);
+        const value = document.createElement('span');
+        value.innerHTML = "...";
+        msg.appendChild(value);
+
+        // Single interval for performance message
+        setInterval(() => {
+          const fps = this.statsInstance!.current();
+          const ok = (fps > 50) ? 'good' : (fps < 30) ? 'bad' : 'ok';
+          const color = (fps > 50) ? 'green' : (fps < 30) ? 'red' : 'gray';
+          value.innerHTML = ok;
+          value.style.color = color;
+          msg.style.borderColor = color;
+        }, 5000);
+      }
     }
-
-    return result;
+    return this.statsInstance;
   }
 
     private static playMusic(): void {

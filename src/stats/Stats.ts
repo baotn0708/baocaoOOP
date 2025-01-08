@@ -17,7 +17,9 @@ export class Stats {
   private msText!: HTMLDivElement;
   private msGraph!: HTMLDivElement;
 
-  constructor() {
+  private static instance: Stats | null = null;
+
+  private constructor() {
     this.startTime = Date.now();
     this.prevTime = this.startTime;
     this.ms = 0;
@@ -31,7 +33,12 @@ export class Stats {
 
     this.initializeDOM();
   }
-
+  public static getInstance(): Stats {
+    if (!Stats.instance) {
+      Stats.instance = new Stats();
+    }
+    return Stats.instance;
+  }
   private initializeDOM(): void {
     // Container
     this.container = document.createElement('div');
