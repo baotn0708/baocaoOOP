@@ -125,43 +125,50 @@ export class Game {
   }
 
     private static playMusic(): void {
-    const storage = Dom.storage as DomStorage;
-    const music = Dom.get('music') as HTMLAudioElement;
-    if (music) {
-      music.loop = true;
-      music.volume = 0.05;
-      music.muted = (storage.muted === "true");
+      const music = Dom.get('music') as HTMLAudioElement;
+      const muteButton = Dom.get('mute');
+      
+      if (!music || !muteButton) {
+        console.warn('Music or mute button elements not found');
+        return;
+      }
   
-      // Add user interaction check
-      const startMusic = () => {
-        music.play().catch(() => {
-          // Ignore failed play attempt
-          console.log("Music autoplay blocked - waiting for user interaction");
-        });
-      };
-  
-      // Try to play initially
-      startMusic();
-  
-      // Add multiple event listeners for user interaction
-      const userInteractionEvents = ['click', 'touchstart', 'keydown'];
-      const startMusicOnce = () => {
-        startMusic();
-        userInteractionEvents.forEach(event => {
-          document.removeEventListener(event, startMusicOnce);
-        });
-      };
-  
-      userInteractionEvents.forEach(event => {
-        document.addEventListener(event, startMusicOnce);
-      });
-  
-      // Mute button functionality
-      Dom.toggleClassName('mute', 'on', music.muted);
-      Dom.on('mute', 'click', () => {
-        storage.muted = String(music.muted = !music.muted);
+      try {
+        // Set initial music state
+        music.loop = true;
+        music.volume = 0.05;
+        
+        // Get stored mute state
+        const storedMuted = localStorage.getItem('muted');
+        music.muted = storedMuted === 'true';
+        
+        // Update initial button state
         Dom.toggleClassName('mute', 'on', music.muted);
-      });
-    }
+  
+        // Add click handler
+        muteButton.addEventListener('click', () => {
+          // Toggle muted state
+          music.muted = !music.muted;
+          // Store muted state
+          localStorage.setItem('muted', music.muted.toString());
+          // Update button appearance
+          Dom.toggleClassName('mute', 'on', music.muted);
+        });
+  
+        // Initial play attempt
+        const playPromise = music.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            // Add click-to-play if autoplay is blocked
+            const resumeAudio = () => {
+              music.play();
+              document.removeEventListener('click', resumeAudio);
+            };
+            document.addEventListener('click', resumeAudio);
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing audio:', error);
+      }
   }
 }

@@ -210,41 +210,43 @@ export class RoadBuilder {
     this.trackLength = this.segments.length * this.segmentLength;
   }
   private static resetSprites(): void {
-    // Add billboards
-    this.addSprite(20,  SPRITES.BILLBOARD07, -2);
-    this.addSprite(40,  SPRITES.BILLBOARD06, -2);
-    this.addSprite(60,  SPRITES.BILLBOARD08, -2);
-    this.addSprite(80,  SPRITES.BILLBOARD09, -2);
-    this.addSprite(100, SPRITES.BILLBOARD01, -2);
-    this.addSprite(120, SPRITES.BILLBOARD02, -2);
-    this.addSprite(140, SPRITES.BILLBOARD03, -2);
-    this.addSprite(160, SPRITES.BILLBOARD04, -2);
-    this.addSprite(180, SPRITES.BILLBOARD05, -2);
-  
+    // Fix billboard positions
+    this.addSprite(20,  SPRITES.BILLBOARD07, -1);
+    this.addSprite(40,  SPRITES.BILLBOARD06, -1);
+    this.addSprite(60,  SPRITES.BILLBOARD08, -1);
+    this.addSprite(80,  SPRITES.BILLBOARD09, -1);
+    this.addSprite(100, SPRITES.BILLBOARD01, -1);
+    this.addSprite(120, SPRITES.BILLBOARD02, -1);
+    this.addSprite(140, SPRITES.BILLBOARD03, -1);
+    this.addSprite(160, SPRITES.BILLBOARD04, -1);
+    this.addSprite(180, SPRITES.BILLBOARD05, -1);
+
+    // Adjust offset multipliers for better positioning
     this.addSprite(240, SPRITES.BILLBOARD07, -1.2);
     this.addSprite(240, SPRITES.BILLBOARD06,  1.2);
     this.addSprite(this.segments.length - 25, SPRITES.BILLBOARD07, -1.2);
     this.addSprite(this.segments.length - 25, SPRITES.BILLBOARD06,  1.2);
-  
-    // Add palm trees
+
+    // Adjust tree positioning
     for(let n = 10; n < 200; n += 4 + Math.floor(n/100)) {
       this.addSprite(n, SPRITES.PALM_TREE, 0.5 + Math.random()*0.5);
       this.addSprite(n, SPRITES.PALM_TREE, 1 + Math.random()*2);
     }
-  
-    // Add some plants
+
+    // Adjust plant positioning
     for(let n = 250; n < 1000; n += 5) {
       this.addSprite(n, SPRITES.COLUMN, 1.1);
       this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -1 - Math.random()*2);
       this.addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -1 - Math.random()*2);
     }
-  
+
+    // Adjust random plant positioning
     for(let n = 200; n < this.segments.length; n += 3) {
-      this.addSprite(n, Util.randomChoice(PLANT_SPRITES), 
-        Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+      const offset = Util.randomChoice([1,-1]) * (2 + Math.random() * 5);
+      this.addSprite(n, Util.randomChoice(PLANT_SPRITES), offset);
     }
-  
-    // Add roadside objects
+
+    // Adjust roadside objects
     for(let n = 1000; n < (this.segments.length-50); n += 100) {
       const side = Util.randomChoice([1, -1]);
       this.addSprite(n + Util.randomInt(0,50), 

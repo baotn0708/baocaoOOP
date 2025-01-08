@@ -83,12 +83,12 @@ export class Render {
     }
   }
 
-    public static sprite(
+  public static sprite(
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
     resolution: number,
-    roadWidth: number,
+    roadWidth: number, 
     sprites: HTMLImageElement[],
     sprite: Sprite,
     scale: number,
@@ -98,13 +98,15 @@ export class Render {
     offsetY: number = 0,
     clipY?: number
   ): void {
-    const destW = (sprite.w * scale * width/2) * (SPRITE_SCALE * roadWidth);
-    const destH = (sprite.h * scale * width/2) * (SPRITE_SCALE * roadWidth);
-  
-    destX = destX + (destW * offsetX);
-    destY = destY + (destH * offsetY);
-  
-    const clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
+    // Make sure we're using original sprite width/height ratios
+    const destW = Math.round((sprite.w * scale * width/2) * (SPRITE_SCALE * roadWidth));
+    const destH = Math.round((sprite.h * scale * width/2) * (SPRITE_SCALE * roadWidth));
+
+    // Fix sprite positioning by rounding coordinates
+    const spriteX = Math.round(destX + (destW * (offsetX || 0)));
+    const spriteY = Math.round(destY + (destH * (offsetY || 0)));
+
+    const clipH = clipY ? Math.max(0, spriteY + destH - clipY) : 0;
     
     if (clipH < destH) {
       ctx.drawImage(
@@ -113,10 +115,10 @@ export class Render {
         sprite.y,
         sprite.w,
         sprite.h - (sprite.h * clipH/destH),
-        destX | 0,  // Force integer positions
-        destY | 0,
-        destW | 0,
-        (destH - clipH) | 0
+        spriteX,
+        spriteY,
+        destW,
+        (destH - clipH)
       );
     }
   }

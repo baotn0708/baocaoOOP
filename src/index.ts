@@ -354,24 +354,29 @@ export class RacingGame {
     // Render sprites and cars
     for(let n = (this.drawDistance-1); n > 0; n--) {
       const segment = RoadBuilder.segments[(baseSegment.index + n) % RoadBuilder.segments.length];
-  
+
       // Render cars
       for(let i = 0; i < segment.cars.length; i++) {
         const car = segment.cars[i];
-        const sprite = car.sprite;
-        const scale = Util.interpolate(segment.p1.screen.scale!, segment.p2.screen.scale!, car.percent);
-        const spriteX = Util.interpolate(segment.p1.screen.x!, segment.p2.screen.x!, car.percent) + (scale * car.offset * this.roadWidth * this.width/2);
-        const spriteY = Util.interpolate(segment.p1.screen.y!, segment.p2.screen.y!, car.percent);
-        Render.sprite(this.ctx, this.width, this.height, this.resolution!, this.roadWidth, [this.sprites!], sprite, scale, spriteX, spriteY, -0.5, -1);
+        const spriteScale = Util.interpolate(segment.p1.screen.scale!, segment.p2.screen.scale!, car.percent!);
+        const spriteX = Math.round(Util.interpolate(segment.p1.screen.x!, segment.p2.screen.x!, car.percent!) + 
+          (spriteScale * car.offset * this.roadWidth * this.width/2));
+        const spriteY = Math.round(Util.interpolate(segment.p1.screen.y!, segment.p2.screen.y!, car.percent!));
+
+        Render.sprite(this.ctx, this.width, this.height, this.resolution!, this.roadWidth, 
+          [this.sprites!], car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
       }
-  
-      // Render roadside sprites
+
+      // Fix sprite positioning in the same way
       for(let i = 0; i < segment.sprites.length; i++) {
         const sprite = segment.sprites[i];
-        const scale = segment.p1.screen.scale!;
-        const spriteX = segment.p1.screen.x! + (scale * sprite.offset * this.roadWidth * this.width/2);
-        const spriteY = segment.p1.screen.y!;
-        Render.sprite(this.ctx, this.width, this.height, this.resolution!, this.roadWidth, [this.sprites!], sprite.source, scale, spriteX, spriteY, -0.5, -1);
+        const spriteScale = segment.p1.screen.scale!;
+        const spriteX = Math.round(segment.p1.screen.x! + (spriteScale * sprite.offset * this.roadWidth * this.width/2));
+        const spriteY = Math.round(segment.p1.screen.y!);
+
+        Render.sprite(this.ctx, this.width, this.height, this.resolution!, this.roadWidth,
+          [this.sprites!], sprite.source, spriteScale, spriteX, spriteY, 
+          (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
       }
   
       // Render player
@@ -576,6 +581,17 @@ export class RacingGame {
         Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || '180';
         this.hud.updateHud('fast_lap_time', 
           this.formatTime(Util.toFloat(Dom.storage.fast_lap_time, 180)));
+          const music = Dom.get('music') as HTMLAudioElement;
+          if (music) {
+            const storedMuted = localStorage.getItem('muted');
+            music.muted = storedMuted === 'true';
+            if (!music.muted) {
+              const playPromise = music.play();
+              if (playPromise) {
+                playPromise.catch(console.error);
+              }
+            }
+          }
       }
     });
   }
