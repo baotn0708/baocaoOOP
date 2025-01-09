@@ -7,8 +7,7 @@ import { Util } from './utils/Util';
 import { Hud } from './Hud';
 import { Polyfill } from './Polyfill';
 import { AuthService } from './AuthService';
-
-
+import { GameDifficulty, DIFFICULTY_SETTINGS } from './Diff';
 Polyfill.applyRequestAnimationFrame();
 
 interface GameOptions {
@@ -92,6 +91,7 @@ export class RacingGame {
   private readonly ASPECT_RATIO = 4/3; // Standard 4:3 game ratio
   private readonly MIN_WIDTH = 640;
   private readonly MIN_HEIGHT = 480;
+  private currentDifficulty: GameDifficulty = GameDifficulty.NORMAL;
 
   // UI
   private hud: Record<string, any> = {
@@ -318,44 +318,41 @@ export class RacingGame {
       this.hillSpeed * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
     this.treeOffset = Util.increase(this.treeOffset, 
       this.treeSpeed * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
-  
 
-      let lapJustReset = false;
+      this.updateLapTime(dt, startPosition);
+      this.hud.updateHud('speed', 5 * Math.round(this.speed/500)); 
+}
+private updateLapTime(dt: number, startPosition: number): void {
+  if (this.position > this.playerZ!) {
+    if (this.currentLapTime && (startPosition < this.playerZ!)) {
+      this.lastLapTime = this.currentLapTime;
+      this.currentLapTime = 0;
+      
+      // Update HUD
+      this.hud.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
+      this.hud.resetValue('current_lap_time');
+      Dom.show('last_lap_time');
 
-      if (this.position > this.playerZ!) {
-        if (this.currentLapTime && (startPosition < this.playerZ!)) {
-          // Save last lap time
-          this.lastLapTime = this.currentLapTime;
-          
-          // Clear HUD first
-          this.hud.resetValue('current_lap_time');
-          
-          // Reset timer
-          this.currentLapTime = 0;
-  
-          // Update last lap display
-          this.hud.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
-          Dom.show('last_lap_time');
-  
-          // Check for fastest lap
-          const storedFastLap = Util.toFloat(localStorage.getItem('fast_lap_time'), 180);
-          if (this.lastLapTime <= storedFastLap) {
-            localStorage.setItem('fast_lap_time', this.lastLapTime.toString());
-            this.hud.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
-            Dom.addClassName('fast_lap_time', 'fastest');
-            Dom.addClassName('last_lap_time', 'fastest');
-          } else {
-            Dom.removeClassName('fast_lap_time', 'fastest');
-            Dom.removeClassName('last_lap_time', 'fastest');
-          }
+      // Check and update fast lap
+      try {
+        const currentFastLap = this.auth.getUserFastLap();
+        if (!currentFastLap || this.lastLapTime < currentFastLap) {
+          this.auth.updateUserFastLap(this.lastLapTime);
+          this.hud.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
+          Dom.addClassName('fast_lap_time', 'fastest');
+          Dom.addClassName('last_lap_time', 'fastest');
         } else {
-          this.currentLapTime += dt;
+          Dom.removeClassName('fast_lap_time', 'fastest');
+          Dom.removeClassName('last_lap_time', 'fastest');
         }
+      } catch (error) {
+        console.error('Error updating fast lap:', error);
       }
-  
-      // Update HUD only if values have changed
-      this.hud.updateHud('speed', 5 * Math.round(this.speed/500));
-      this.hud.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
+    } else {
+      this.currentLapTime += dt;
+    }
+  }
+  this.hud.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
 }
 
   private render(): void {
@@ -662,9 +659,30 @@ export class RacingGame {
 
     // Show login overlay
     loginOverlay.style.display = 'flex';
+
+    loginButton.onclick = async () => {
+      const username = usernameInput.value.trim();
+      if (username) {
+        this.auth.login(username);
+        loginOverlay.style.display = 'none';
+        await this.showDifficultySelection();
+        this.initializeGame();
+      }
+    };
+  
+    guestButton.onclick = async () => {
+      this.auth.login('Guest_' + Date.now());
+      loginOverlay.style.display = 'none';
+      await this.showDifficultySelection();
+      this.initializeGame();
+    };
   }
 
   private initializeGame(): void {
+  const settings = DIFFICULTY_SETTINGS[this.currentDifficulty];
+  this.fogDensity = settings.fogDensity;
+  this.drawDistance = settings.drawDistance;
+  RoadBuilder.setTotalCars(settings.totalCars);
     this.canvas = Dom.get('canvas') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d')!;
     
@@ -688,9 +706,51 @@ export class RacingGame {
     window.addEventListener('resize', () => this.setupResponsiveCanvas());
     
     // Start game
+    
+    const userFastLap = this.auth.getUserFastLap();
+    if (userFastLap) {
+      this.hud.updateHud('fast_lap_time', this.formatTime(userFastLap));
+    } else {
+      this.hud.updateHud('fast_lap_time', 'NULL');
+    }
     this.start();
   }
-
+  private async showDifficultySelection(): Promise<void> {
+    const html = `
+      <div id="difficultyOverlay" class="difficulty-overlay">
+        <div class="difficulty-form">
+          <h2>Select Difficulty</h2>
+          <div class="difficulty-buttons">
+            <button data-difficulty="${GameDifficulty.EASY}">Easy</button>
+            <button data-difficulty="${GameDifficulty.NORMAL}">Normal</button>
+            <button data-difficulty="${GameDifficulty.HARD}">Hard</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const overlay = document.createElement('div');
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay.firstElementChild!);
+  
+    return new Promise((resolve) => {
+      const buttons = document.querySelectorAll('[data-difficulty]');
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          const difficulty = button.getAttribute('data-difficulty') as GameDifficulty;
+          this.currentDifficulty = difficulty;
+          this.auth.setDifficulty(difficulty);
+          
+          // Update HUD with current difficulty's fast lap immediately
+          const userFastLap = this.auth.getUserFastLap();
+          this.hud.updateHud('fast_lap_time', userFastLap ? this.formatTime(userFastLap) : 'NULL');
+          
+          document.getElementById('difficultyOverlay')?.remove();
+          resolve();
+        });
+      });
+    });
+  }
   public start(): void {
     Game.run({
       canvas: this.canvas,
@@ -715,9 +775,9 @@ export class RacingGame {
         this.reset();
         
         // Initialize fast lap time if not set
-        Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || '180';
-        this.hud.updateHud('fast_lap_time', 
-          this.formatTime(Util.toFloat(Dom.storage.fast_lap_time, 180)));
+        // Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || '180';
+        // this.hud.updateHud('fast_lap_time', 
+        //   this.formatTime(Util.toFloat(Dom.storage.fast_lap_time, 180)));
           const music = Dom.get('music') as HTMLAudioElement;
           if (music) {
             const storedMuted = localStorage.getItem('muted');

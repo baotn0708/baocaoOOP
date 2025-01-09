@@ -102,7 +102,20 @@ body {
   border-radius: 8px;
   width: 300px;
 }
-.leaderboard-container {
+/* Add to existing CSS */
+#userDisplay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.difficulty-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -115,37 +128,73 @@ body {
   z-index: 2000;
 }
 
-.leaderboard {
+.difficulty-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.difficulty-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.difficulty-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.leaderboard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.leaderboard-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  min-width: 300px;
+  min-width: 400px;
 }
 
-.mode-selector {
-  margin: 15px 0;
+.difficulty-filters {
   display: flex;
   gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
 }
 
-.mode-btn {
-  padding: 5px 15px;
+.difficulty-filters button {
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.mode-btn.active {
+.difficulty-filters button.active {
   background: #4CAF50;
   color: white;
 }
 
-.leaderboard table {
+.leaderboard-table {
   width: 100%;
   border-collapse: collapse;
+  margin: 20px 0;
 }
 
-.leaderboard th, .leaderboard td {
+.leaderboard-table th,
+.leaderboard-table td {
   padding: 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;

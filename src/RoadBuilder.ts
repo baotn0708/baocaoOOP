@@ -275,4 +275,10 @@ export class RoadBuilder {
   public static findSegment(z: number): Segment {
     return this.segments[Math.floor(z/this.segmentLength) % this.segments.length];
   }
+
+  public static setTotalCars(value: number): void {
+
+    RoadBuilder.totalCars = value;
+
+  }
 }
