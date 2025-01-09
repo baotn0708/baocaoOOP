@@ -40,14 +40,15 @@ export class Stats {
     return Stats.instance;
   }
   private initializeDOM(): void {
-    // Container
+    const existingStats = document.getElementById('stats');
+    if (existingStats) {
+        existingStats.remove();
+    }
+
+    // Create new container
     this.container = document.createElement('div');
     this.container.id = 'stats';
-    this.container.style.cssText = 'width:80px;opacity:0.9;cursor:pointer';
-    this.container.addEventListener('mousedown', (event) => {
-      event.preventDefault();
-      this.setMode((++this.mode) % 2);
-    });
+    this.container.style.cssText = 'width:80px;position:fixed;top:0;left:0;';
 
     // FPS
     this.fpsDiv = document.createElement('div');
@@ -89,7 +90,7 @@ export class Stats {
     this.createBars(this.fpsGraph);
     this.createBars(this.msGraph);
 
-    document.body.appendChild(this.container);
+    // document.body.appendChild(this.container);
   }
 
   private createBars(graph: HTMLDivElement): void {

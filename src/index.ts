@@ -125,7 +125,7 @@ export class RacingGame {
   
     // Initialize game
     this.reset();
-    this.initializeEventListeners();
+    // this.initializeEventListeners();
     this.setupResponsiveCanvas();
     window.addEventListener('resize', () => this.setupResponsiveCanvas());
     this.initializeLogoutButton();
@@ -211,28 +211,28 @@ export class RacingGame {
       RoadBuilder.resetRoad();
     }
   
-    // Update UI
-    this.refreshTweakUI();
+    // // Update UI
+    // this.refreshTweakUI();
   }
-  private refreshTweakUI(): void {
-    const lanesElement = Dom.get('lanes') as HTMLSelectElement;
-    lanesElement.selectedIndex = this.lanes - 1;
+  // private refreshTweakUI(): void {
+  //   const lanesElement = Dom.get('lanes') as HTMLSelectElement;
+  //   lanesElement.selectedIndex = this.lanes - 1;
   
-    Dom.set('currentRoadWidth', this.roadWidth.toString());
-    (Dom.get('roadWidth') as HTMLInputElement).value = this.roadWidth.toString();
+  //   Dom.set('currentRoadWidth', this.roadWidth.toString());
+  //   (Dom.get('roadWidth') as HTMLInputElement).value = this.roadWidth.toString();
   
-    Dom.set('currentCameraHeight', this.cameraHeight.toString());
-    (Dom.get('cameraHeight') as HTMLInputElement).value = this.cameraHeight.toString();
+  //   Dom.set('currentCameraHeight', this.cameraHeight.toString());
+  //   (Dom.get('cameraHeight') as HTMLInputElement).value = this.cameraHeight.toString();
   
-    Dom.set('currentDrawDistance', this.drawDistance.toString());
-    (Dom.get('drawDistance') as HTMLInputElement).value = this.drawDistance.toString();
+  //   Dom.set('currentDrawDistance', this.drawDistance.toString());
+  //   (Dom.get('drawDistance') as HTMLInputElement).value = this.drawDistance.toString();
   
-    Dom.set('currentFieldOfView', this.fieldOfView.toString());
-    (Dom.get('fieldOfView') as HTMLInputElement).value = this.fieldOfView.toString();
+  //   Dom.set('currentFieldOfView', this.fieldOfView.toString());
+  //   (Dom.get('fieldOfView') as HTMLInputElement).value = this.fieldOfView.toString();
   
-    Dom.set('currentFogDensity', this.fogDensity.toString());
-    (Dom.get('fogDensity') as HTMLInputElement).value = this.fogDensity.toString();
-  }
+  //   Dom.set('currentFogDensity', this.fogDensity.toString());
+  //   (Dom.get('fogDensity') as HTMLInputElement).value = this.fogDensity.toString();
+  // }
 
   private update(dt: number): void {
     const playerSegment = RoadBuilder.findSegment(this.position + this.playerZ!);
@@ -550,87 +550,87 @@ private updateLapTime(dt: number, startPosition: number): void {
     }
   }
 
-  private initializeEventListeners(): void {
-    // Resolution change handler
-    Dom.on('resolution', 'change', (ev: Event) => {
-      const target = ev.target as HTMLSelectElement;
-      let w: number, h: number;
+  // private initializeEventListeners(): void {
+  //   // Resolution change handler
+  //   Dom.on('resolution', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLSelectElement;
+  //     let w: number, h: number;
       
-      switch(target.options[target.selectedIndex].value) {
-        case 'fine':   w = 1280; h = 960; break;
-        case 'high':   w = 1024; h = 768; break;
-        case 'medium': w = 640;  h = 480; break;
-        case 'low':    w = 480;  h = 360; break;
-        default:       w = 1024; h = 768; break;
-      }
+  //     switch(target.options[target.selectedIndex].value) {
+  //       case 'fine':   w = 1280; h = 960; break;
+  //       case 'high':   w = 1024; h = 768; break;
+  //       case 'medium': w = 640;  h = 480; break;
+  //       case 'low':    w = 480;  h = 360; break;
+  //       default:       w = 1024; h = 768; break;
+  //     }
       
-      this.reset({ width: w, height: h });
-      Dom.blur(ev);
-    });
+  //     this.reset({ width: w, height: h });
+  //     Dom.blur(ev);
+  //   });
   
-    // Other UI controls
-    Dom.on('lanes', 'change', (ev: Event) => {
-      const target = ev.target as HTMLSelectElement;
-      Dom.blur(ev);
-      this.reset({ lanes: Number(target.options[target.selectedIndex].value) });
-    });
+  //   // Other UI controls
+  //   Dom.on('lanes', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLSelectElement;
+  //     Dom.blur(ev);
+  //     this.reset({ lanes: Number(target.options[target.selectedIndex].value) });
+  //   });
   
-    Dom.on('roadWidth', 'change', (ev: Event) => {
-      const target = ev.target as HTMLInputElement;
-      Dom.blur(ev);
-      this.reset({ 
-        roadWidth: Util.limit(
-          Util.toInt(target.value, this.roadWidth),
-          Util.toInt(target.getAttribute('min')!, 500),
-          Util.toInt(target.getAttribute('max')!, 3000)
-        )
-      });
-    });
-    Dom.on('cameraHeight', 'change', (ev: Event) => {
-      const target = ev.target as HTMLInputElement;
-      Dom.blur(ev);
-      this.reset({ 
-        cameraHeight: Util.limit(
-          Util.toInt(target.value, this.cameraHeight),
-          Util.toInt(target.getAttribute('min')!, 100),
-          Util.toInt(target.getAttribute('max')!, 2000)
-        )
-      });
-    });
-    Dom.on('drawDistance', 'change', (ev: Event) => {
-      const target = ev.target as HTMLInputElement;
-      Dom.blur(ev);
-      this.reset({ 
-        drawDistance: Util.limit(
-          Util.toInt(target.value, this.drawDistance),
-          Util.toInt(target.getAttribute('min')!, 100),
-          Util.toInt(target.getAttribute('max')!, 1000)
-        )
-      });
-    });
-    Dom.on('fieldOfView', 'change', (ev: Event) => {
-      const target = ev.target as HTMLInputElement;
-      Dom.blur(ev);
-      this.reset({ 
-        fieldOfView: Util.limit(
-          Util.toInt(target.value, this.fieldOfView),
-          Util.toInt(target.getAttribute('min')!, 60),
-          Util.toInt(target.getAttribute('max')!, 140)
-        )
-      });
-    });
-    Dom.on('fogDensity', 'change', (ev: Event) => {
-      const target = ev.target as HTMLInputElement;
-      Dom.blur(ev);
-      this.reset({ 
-        fogDensity: Util.limit(
-          Util.toInt(target.value, this.fogDensity),
-          Util.toInt(target.getAttribute('min')!, 1),
-          Util.toInt(target.getAttribute('max')!, 10)
-        )
-      });
-    });
-  }
+  //   Dom.on('roadWidth', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLInputElement;
+  //     Dom.blur(ev);
+  //     this.reset({ 
+  //       roadWidth: Util.limit(
+  //         Util.toInt(target.value, this.roadWidth),
+  //         Util.toInt(target.getAttribute('min')!, 500),
+  //         Util.toInt(target.getAttribute('max')!, 3000)
+  //       )
+  //     });
+  //   });
+  //   Dom.on('cameraHeight', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLInputElement;
+  //     Dom.blur(ev);
+  //     this.reset({ 
+  //       cameraHeight: Util.limit(
+  //         Util.toInt(target.value, this.cameraHeight),
+  //         Util.toInt(target.getAttribute('min')!, 100),
+  //         Util.toInt(target.getAttribute('max')!, 2000)
+  //       )
+  //     });
+  //   });
+  //   Dom.on('drawDistance', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLInputElement;
+  //     Dom.blur(ev);
+  //     this.reset({ 
+  //       drawDistance: Util.limit(
+  //         Util.toInt(target.value, this.drawDistance),
+  //         Util.toInt(target.getAttribute('min')!, 100),
+  //         Util.toInt(target.getAttribute('max')!, 1000)
+  //       )
+  //     });
+  //   });
+  //   Dom.on('fieldOfView', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLInputElement;
+  //     Dom.blur(ev);
+  //     this.reset({ 
+  //       fieldOfView: Util.limit(
+  //         Util.toInt(target.value, this.fieldOfView),
+  //         Util.toInt(target.getAttribute('min')!, 60),
+  //         Util.toInt(target.getAttribute('max')!, 140)
+  //       )
+  //     });
+  //   });
+  //   Dom.on('fogDensity', 'change', (ev: Event) => {
+  //     const target = ev.target as HTMLInputElement;
+  //     Dom.blur(ev);
+  //     this.reset({ 
+  //       fogDensity: Util.limit(
+  //         Util.toInt(target.value, this.fogDensity),
+  //         Util.toInt(target.getAttribute('min')!, 1),
+  //         Util.toInt(target.getAttribute('max')!, 10)
+  //       )
+  //     });
+  //   });
+  // }
   private async showLoginScreen(): Promise<void> {
     const loginOverlay = document.getElementById('loginOverlay')!;
     const loginButton = document.getElementById('loginButton')!;
@@ -735,7 +735,7 @@ private updateLapTime(dt: number, startPosition: number): void {
     this.hud = new Hud();
     
     this.reset();
-    this.initializeEventListeners();
+    // this.initializeEventListeners();
     this.setupResponsiveCanvas();
     window.addEventListener('resize', () => this.setupResponsiveCanvas());
     

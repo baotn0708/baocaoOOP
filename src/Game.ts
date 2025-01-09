@@ -94,51 +94,31 @@ export class Game {
     document.addEventListener('keyup', (ev: KeyboardEvent) => onkey(ev.keyCode, 'up'));
   }
 
-  public static stats(parentId: string, id?: string): Stats {
-    if (!this.statsInstance) {
-      // Use singleton Stats instance
-      this.statsInstance = Stats.getInstance();
-      this.statsInstance.domElement.id = id || 'stats';
-      
-      const parent = Dom.get(parentId);
-      if (parent) {
-        // Remove any existing stats elements
-        const existingStats = document.getElementById('stats');
-        if (existingStats) {
-          existingStats.remove();
-        }
-        
-        // Remove any existing performance message
-        const existingMsg = parent.querySelector('[data-performance-msg]');
-        if (existingMsg) {
-          existingMsg.remove();
-        }
-
-        // Add new elements
-        parent.appendChild(this.statsInstance.domElement);
-
-        const msg = document.createElement('div');
-        msg.setAttribute('data-performance-msg', 'true');
-        msg.style.cssText = "border: 2px solid gray; padding: 5px; margin-top: 5px; text-align: left; font-size: 1.15em; text-align: right;";
-        msg.innerHTML = "Your canvas performance is ";
-        parent.appendChild(msg);
-
-        const value = document.createElement('span');
-        value.innerHTML = "...";
-        msg.appendChild(value);
-
-        // Single interval for performance message
-        setInterval(() => {
-          const fps = this.statsInstance!.current();
-          const ok = (fps > 50) ? 'good' : (fps < 30) ? 'bad' : 'ok';
-          const color = (fps > 50) ? 'green' : (fps < 30) ? 'red' : 'gray';
-          value.innerHTML = ok;
-          value.style.color = color;
-          msg.style.borderColor = color;
-        }, 5000);
+    public static stats(parentId: string, id?: string): Stats {
+      if (!this.statsInstance) {
+          this.statsInstance = Stats.getInstance();
+          
+          // Get parent element
+          const parent = document.getElementById(parentId);
+          if (parent) {
+              // Remove existing container if any
+              const existingContainer = document.getElementById('stats-container');
+              if (existingContainer) {
+                  existingContainer.remove();
+              }
+  
+              // Create new container
+              const statsContainer = document.createElement('div');
+              statsContainer.id = 'stats-container';
+              
+              // Add stats element to container
+              statsContainer.appendChild(this.statsInstance.domElement);
+              
+              // Add container to parent
+              parent.appendChild(statsContainer);
+          }
       }
-    }
-    return this.statsInstance;
+      return this.statsInstance;
   }
 
   private static playMusic(): void {

@@ -14,7 +14,7 @@ export const DIFFICULTY_SETTINGS: Record<GameDifficulty, DifficultySettings> = {
   [GameDifficulty.EASY]: {
     fogDensity: 5,
     drawDistance: 300,
-    totalCars: 50
+    totalCars: 5
   },
   [GameDifficulty.NORMAL]: {
     fogDensity: 20,

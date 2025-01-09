@@ -36,10 +36,6 @@ body {
     background-position: -32px 0; 
   }
 
-/**************************************************/
-/* rudimentary heads up display (only used in v4) */
-/**************************************************/
-
 #hud {
   position: absolute;
   top: 0;
