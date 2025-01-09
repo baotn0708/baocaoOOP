@@ -6,6 +6,8 @@ import { Dom } from './utils/Dom';
 import { Util } from './utils/Util';
 import { Hud } from './Hud';
 import { Polyfill } from './Polyfill';
+import { AuthService } from './AuthService';
+
 
 Polyfill.applyRequestAnimationFrame();
 
@@ -22,6 +24,10 @@ interface GameOptions {
   rumbleLength?: number;
 }
 export class RacingGame {
+  private auth: AuthService;
+  
+  private static instance: RacingGame | null = null;
+  
   // Basic game settings
   private fps = 60;
   private step = 1/this.fps;
@@ -83,6 +89,10 @@ export class RacingGame {
   private keyFaster = false;
   private keySlower = false;
 
+  private readonly ASPECT_RATIO = 4/3; // Standard 4:3 game ratio
+  private readonly MIN_WIDTH = 640;
+  private readonly MIN_HEIGHT = 480;
+
   // UI
   private hud: Record<string, any> = {
     speed: { value: null, dom: null },
@@ -92,7 +102,9 @@ export class RacingGame {
   };
   private storage: Storage = window.localStorage || new Storage();
 
-  constructor() {
+  private constructor() {
+    this.auth = AuthService.getInstance();
+    this.showLoginScreen();
     this.canvas = Dom.get('canvas') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d')!;
   
@@ -114,8 +126,65 @@ export class RacingGame {
     // Initialize game
     this.reset();
     this.initializeEventListeners();
+    this.setupResponsiveCanvas();
+    window.addEventListener('resize', () => this.setupResponsiveCanvas());
   }
+  public static getInstance(): RacingGame {
+    if (!RacingGame.instance) {
+      RacingGame.instance = new RacingGame();
+    }
+    return RacingGame.instance;
+  }
+  private setupResponsiveCanvas(): void {
+    const availableWidth = window.innerWidth;
+    const availableHeight = window.innerHeight;
 
+    // Calculate dimensions maintaining aspect ratio
+    let gameWidth = availableWidth;
+    let gameHeight = gameWidth / this.ASPECT_RATIO;
+
+    // If height exceeds available space, scale based on height
+    if (gameHeight > availableHeight) {
+      gameHeight = availableHeight;
+      gameWidth = gameHeight * this.ASPECT_RATIO;
+    }
+
+    // Enforce minimum dimensions
+    gameWidth = Math.max(gameWidth, this.MIN_WIDTH);
+    gameHeight = Math.max(gameHeight, this.MIN_HEIGHT);
+
+    // Center the game container
+    const container = document.getElementById('racer');
+    if (container) {
+      container.style.width = `${gameWidth}px`;
+      container.style.height = `${gameHeight}px`;
+      container.style.position = 'absolute';
+      container.style.left = `${(availableWidth - gameWidth) / 2}px`;
+      container.style.top = `${(availableHeight - gameHeight) / 2}px`;
+    }
+
+    // Update canvas dimensions
+    this.canvas.width = gameWidth;
+    this.canvas.height = gameHeight;
+
+    // Update canvas style
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+
+    // Update HUD positioning
+    const hud = document.getElementById('hud');
+    if (hud) {
+      hud.style.width = '100%';
+      hud.style.position = 'absolute';
+      hud.style.top = '0';
+    }
+
+    // Reset game with new dimensions
+    this.reset({
+      width: gameWidth,
+      height: gameHeight
+    });
+}
   private reset(options: Partial<GameOptions> = {}): void {
     // Canvas dimensions
     this.canvas.width = this.width = Util.toInt(options.width, this.width);
@@ -250,33 +319,44 @@ export class RacingGame {
     this.treeOffset = Util.increase(this.treeOffset, 
       this.treeSpeed * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
   
-    // Update lap times
-    if (this.position > this.playerZ!) {
-      if (this.currentLapTime && (startPosition < this.playerZ!)) {
-        this.lastLapTime = this.currentLapTime;
-        this.currentLapTime = 0;
+
+      let lapJustReset = false;
+
+      if (this.position > this.playerZ!) {
+        if (this.currentLapTime && (startPosition < this.playerZ!)) {
+          // Save last lap time
+          this.lastLapTime = this.currentLapTime;
+          
+          // Clear HUD first
+          this.hud.resetValue('current_lap_time');
+          
+          // Reset timer
+          this.currentLapTime = 0;
   
-        if (this.lastLapTime <= Util.toFloat(Dom.storage.fast_lap_time, 180)) {
-          Dom.storage.fast_lap_time = this.lastLapTime.toString();
-          this.hud.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
-          Dom.addClassName('fast_lap_time', 'fastest');
-          Dom.addClassName('last_lap_time', 'fastest');
+          // Update last lap display
+          this.hud.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
+          Dom.show('last_lap_time');
+  
+          // Check for fastest lap
+          const storedFastLap = Util.toFloat(localStorage.getItem('fast_lap_time'), 180);
+          if (this.lastLapTime <= storedFastLap) {
+            localStorage.setItem('fast_lap_time', this.lastLapTime.toString());
+            this.hud.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
+            Dom.addClassName('fast_lap_time', 'fastest');
+            Dom.addClassName('last_lap_time', 'fastest');
+          } else {
+            Dom.removeClassName('fast_lap_time', 'fastest');
+            Dom.removeClassName('last_lap_time', 'fastest');
+          }
         } else {
-          Dom.removeClassName('fast_lap_time', 'fastest');
-          Dom.removeClassName('last_lap_time', 'fastest');
+          this.currentLapTime += dt;
         }
-  
-        this.hud.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
-        Dom.show('last_lap_time');
-      } else {
-        this.currentLapTime += dt;
       }
-    }
   
-    // Update HUD
-    this.hud.updateHud('speed', 5 * Math.round(this.speed/500));
-    this.hud.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
-  }
+      // Update HUD only if values have changed
+      this.hud.updateHud('speed', 5 * Math.round(this.speed/500));
+      this.hud.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
+}
 
   private render(): void {
     const baseSegment = RoadBuilder.findSegment(this.position);
@@ -553,6 +633,63 @@ export class RacingGame {
       });
     });
   }
+  private async showLoginScreen(): Promise<void> {
+    const loginOverlay = document.getElementById('loginOverlay')!;
+    const loginButton = document.getElementById('loginButton')!;
+    const guestButton = document.getElementById('guestButton')!;
+    const usernameInput = document.getElementById('username') as HTMLInputElement;
+
+    // Remove password field since it's not needed
+    const passwordField = document.querySelector('input[type="password"]');
+    if (passwordField) {
+      passwordField.remove();
+    }
+
+    loginButton.onclick = () => {
+      const username = usernameInput.value.trim();
+      if (username) {
+        this.auth.login(username);
+        loginOverlay.style.display = 'none';
+        this.initializeGame();
+      }
+    };
+
+    guestButton.onclick = () => {
+      this.auth.login('Guest_' + Date.now());
+      loginOverlay.style.display = 'none';
+      this.initializeGame();
+    };
+
+    // Show login overlay
+    loginOverlay.style.display = 'flex';
+  }
+
+  private initializeGame(): void {
+    this.canvas = Dom.get('canvas') as HTMLCanvasElement;
+    this.ctx = this.canvas.getContext('2d')!;
+    
+    // Initialize core game properties
+    this.maxSpeed = RoadBuilder.segmentLength/this.step;
+    this.accel = this.maxSpeed/5;
+    this.breaking = -this.maxSpeed;
+    this.decel = -this.maxSpeed/5;
+    this.offRoadDecel = -this.maxSpeed/2;
+    this.offRoadLimit = this.maxSpeed/4;
+
+    this.segments = RoadBuilder.segments;
+    this.trackLength = RoadBuilder.trackLength;
+    this.cars = RoadBuilder.cars;
+    
+    this.hud = new Hud();
+    
+    this.reset();
+    this.initializeEventListeners();
+    this.setupResponsiveCanvas();
+    window.addEventListener('resize', () => this.setupResponsiveCanvas());
+    
+    // Start game
+    this.start();
+  }
 
   public start(): void {
     Game.run({
@@ -596,5 +733,4 @@ export class RacingGame {
     });
   }
 }
-
-new RacingGame().start();
+const game = RacingGame.getInstance();

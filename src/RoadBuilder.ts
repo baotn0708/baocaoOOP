@@ -1,6 +1,5 @@
 import { COLORS, SPRITES, BILLBOARD_SPRITES, PLANT_SPRITES, CAR_SPRITES, Sprite } from "./constants";
 import { Util } from "./utils/Util";
-import { RacingGame } from "./index";
 
 interface Point {
   world: {

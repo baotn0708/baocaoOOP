@@ -34,17 +34,28 @@ export class Dom {
 
   public static toggleClassName(ele: string | HTMLElement, name: string, on?: boolean): void {
     const element = this.get(ele);
+    console.log('Toggle class - Element:', element);
+    console.log('Toggle class - Name:', name);
+    console.log('Toggle class - On:', on);
+    
     const classes = element.className.split(' ');
     const n = classes.indexOf(name);
     const forceOn = (typeof on === 'undefined') ? (n < 0) : on;
     
+    console.log('Current classes:', classes);
+    console.log('Class index:', n);
+    console.log('Force on:', forceOn);
+  
     if (forceOn && n < 0) {
       classes.push(name);
+      console.log('Added class');
     } else if (!forceOn && n >= 0) {
       classes.splice(n, 1);
+      console.log('Removed class');
     }
     
     element.className = classes.join(' ');
+    console.log('Final classes:', element.className);
   }
 
   public static storage: Storage = window.localStorage || {} as Storage;

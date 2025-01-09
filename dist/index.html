@@ -55,9 +55,9 @@
     </tr>
   </table>
 
-  <div id='instructions'>
+  <!-- <div id='instructions'>
     <p>Use the <b>arrow keys</b> to drive the car.</p>
-  </div>
+  </div> -->
 
   <div id="racer">
     <div id="hud">
@@ -71,12 +71,71 @@
     </canvas>
     Loading...
   </div>
-
   <audio id='music'>
     <source src="music/racer.ogg">
     <source src="music/racer.mp3">
   </audio>
-  <button id="mute" class="flag"></button>
+  <div class="game-controls">
+    <button id="mute" class="game-button"></button>
+    <button id="restart" class="game-button">Restart</button>
+    <button id="pause" class="game-button">Pause</button>
+    <button id="login" class="game-button">Login</button>
+    <button id="profile" class="game-button">Profile</button>
+  </div>
+  
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-form">
+      <h2>Racing Game</h2>
+      <div class="form-group">
+        <input type="text" id="username" placeholder="Username">
+      </div>
+      <div class="form-group">
+        <input type="password" id="password" placeholder="Password">
+      </div>
+      <div class="form-actions">
+        <button id="loginButton" class="game-button">Login/Register</button>
+        <button id="guestButton" class="game-button">Play as Guest</button>
+      </div>
+      <div id="loginError" class="error-message"></div>
+    </div>
+  </div>
+  <!-- <div id="loginOverlay" class="login-overlay">
+    <div class="login-form">
+      <h2>Racing Game Login</h2>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password">
+      </div>
+      <div class="form-actions">
+        <button id="loginButton">Login</button>
+        <button id="guestButton">Play as Guest</button>
+      </div>
+      <div id="loginError" class="error-message"></div>
+    </div>
+  </div> -->
+  <!-- <div id="loginOverlay" class="login-overlay">
+    <div class="login-form">
+      <h2>Racing Game Login</h2>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password">
+      </div>
+      <div class="form-actions">
+        <button id="loginButton">Login</button>
+        <button id="guestButton">Play as Guest</button>
+      </div>
+      <div id="loginError" class="error-message"></div>
+    </div>
+  </div> -->
+  
 
   <!-- <script src="stats.js"></script>
   <script src="Dom.js"></script>
