@@ -128,6 +128,7 @@ export class RacingGame {
     this.initializeEventListeners();
     this.setupResponsiveCanvas();
     window.addEventListener('resize', () => this.setupResponsiveCanvas());
+    this.initializeLogoutButton();
   }
   public static getInstance(): RacingGame {
     if (!RacingGame.instance) {
@@ -676,6 +677,39 @@ private updateLapTime(dt: number, startPosition: number): void {
       await this.showDifficultySelection();
       this.initializeGame();
     };
+  }
+  private initializeLogoutButton(): void {
+    const logoutButton = document.getElementById('logout') as HTMLButtonElement;
+    logoutButton.addEventListener('click', () => this.handleLogout());
+  }
+  private handleLogout(): void {
+    // Call auth service logout
+    this.auth.logout();
+    
+    // Hide logout button
+    const logoutButton = document.getElementById('logout') as HTMLButtonElement;
+    logoutButton.style.display = 'none';
+    
+    // Reset game state
+    this.reset();
+    
+    // Hide game controls
+    const gameControls = document.querySelector('.game-controls') as HTMLElement;
+    if (gameControls) {
+      gameControls.style.display = 'none';
+    }
+    
+    // Show login screen
+    const loginOverlay = document.getElementById('loginOverlay') as HTMLElement;
+    loginOverlay.style.display = 'flex';
+    
+    // Reset HUD values
+    this.hud.updateHud('fast_lap_time', 'NULL');
+    this.hud.updateHud('last_lap_time', '0.0');
+    this.hud.updateHud('current_lap_time', '0.0');
+    
+    // Reload page for complete reset
+    window.location.reload();
   }
 
   private initializeGame(): void {

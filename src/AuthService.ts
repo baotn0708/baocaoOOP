@@ -48,29 +48,6 @@ export class AuthService {
     
     localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
   }
-//   private createNewUser(username: string): UserData {
-//     return {
-//       username,
-//       createdAt: Date.now(),
-//       records: {
-//         [GameDifficulty.EASY]: null,
-//         [GameDifficulty.NORMAL]: null,
-//         [GameDifficulty.HARD]: null
-//       }
-//     };
-//   }
-
-  private migrateLegacyUser(oldData: LegacyUserData): UserData {
-    return {
-      username: oldData.username,
-      createdAt: oldData.createdAt || Date.now(),
-      records: {
-        [GameDifficulty.EASY]: null,
-        [GameDifficulty.NORMAL]: oldData.fastLapTime || null,
-        [GameDifficulty.HARD]: null
-      }
-    };
-  }
   public setDifficulty(difficulty: GameDifficulty): void {
     this.currentDifficulty = difficulty;
   }

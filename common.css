@@ -102,19 +102,7 @@ body {
   border-radius: 8px;
   width: 300px;
 }
-/* Add to existing CSS */
-#userDisplay {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+
 .difficulty-overlay {
   position: fixed;
   top: 0;
@@ -147,4 +135,23 @@ body {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
+}
+.logout-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background: rgba(255, 99, 71, 0.9); /* Tomato red with transparency */
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+.logout-button:hover {
+  transform: scale(1.05);
+  background: rgba(255, 99, 71, 1); /* Solid on hover */
 }

@@ -102,19 +102,7 @@ body {
   border-radius: 8px;
   width: 300px;
 }
-/* Add to existing CSS */
-#userDisplay {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+
 .difficulty-overlay {
   position: fixed;
   top: 0;
@@ -148,54 +136,22 @@ body {
   cursor: pointer;
   transition: all 0.3s;
 }
-.leaderboard-overlay {
+.logout-button {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.leaderboard-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  min-width: 400px;
-}
-
-.difficulty-filters {
-  display: flex;
-  gap: 10px;
-  margin: 20px 0;
-  justify-content: center;
-}
-
-.difficulty-filters button {
+  top: 20px;
+  right: 20px;
   padding: 8px 16px;
+  background: rgba(255, 99, 71, 0.9); /* Tomato red with transparency */
   border: none;
   border-radius: 4px;
-  cursor: pointer;
-}
-
-.difficulty-filters button.active {
-  background: #4CAF50;
   color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 1000;
 }
 
-.leaderboard-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-
-.leaderboard-table th,
-.leaderboard-table td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.logout-button:hover {
+  transform: scale(1.05);
+  background: rgba(255, 99, 71, 1); /* Solid on hover */
 }
